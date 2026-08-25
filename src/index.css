@@ -1,0 +1,565 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 197 57% 91%;
+    --foreground: 199 45% 16%;
+
+    --card: 197 50% 95%;
+    --card-foreground: 199 45% 16%;
+
+    --popover: 197 50% 96%;
+    --popover-foreground: 199 45% 16%;
+
+    --primary: 198 38% 43%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 199 36% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 197 30% 86%;
+    --muted-foreground: 199 22% 38%;
+
+    --accent: 189 40% 80%;
+    --accent-foreground: 199 45% 16%;
+
+    --destructive: 354 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 206 17% 84%;
+    --input: 206 17% 84%;
+    --ring: 198 38% 43%;
+
+    --radius: 0.875rem;
+
+    /* TruthWeave 5-Color Palette tokens */
+    --tw-turquoise: 198 38% 43%;
+    --tw-slate-blue: 199 36% 55%;
+    --tw-platinum: 206 17% 89%;
+    --tw-glacier: 189 40% 80%;
+    --tw-ice-blue: 197 57% 90%;
+
+    --tw-emerald: 174 58% 38%;
+    --tw-amber: 38 88% 48%;
+    --tw-rose: 354 75% 58%;
+    --tw-surface: 197 45% 94%;
+    --tw-surface-elevated: 197 57% 97%;
+    --tw-glow-primary: 198 38% 43%;
+    --tw-gradient-start: 198 38% 43%;
+    --tw-gradient-end: 199 36% 55%;
+
+    /* Neumorphic frosted tokens */
+    --neuro-bg: 197 50% 91%;
+    --neuro-bg-alt: 197 45% 93%;
+    --neuro-surface: 197 52% 94%;
+    --neuro-shadow-light: 0 0% 100%;
+    --neuro-shadow-dark: 199 30% 70%;
+
+    --sidebar-background: 197 50% 95%;
+    --sidebar-foreground: 199 45% 16%;
+    --sidebar-primary: 198 38% 43%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 189 40% 80%;
+    --sidebar-accent-foreground: 199 45% 16%;
+    --sidebar-border: 206 17% 84%;
+    --sidebar-ring: 198 38% 43%;
+  }
+
+  .dark {
+    --background: 200 45% 9%;
+    --foreground: 197 57% 94%;
+    --card: 200 45% 12%;
+    --card-foreground: 197 57% 94%;
+    --popover: 200 45% 12%;
+    --popover-foreground: 197 57% 94%;
+    --primary: 199 36% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 198 38% 43%;
+    --secondary-foreground: 197 57% 94%;
+    --muted: 200 35% 18%;
+    --muted-foreground: 189 30% 70%;
+    --accent: 189 40% 80%;
+    --accent-foreground: 200 45% 9%;
+    --destructive: 354 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 35% 20%;
+    --input: 200 35% 20%;
+    --ring: 199 36% 55%;
+
+    --neuro-bg: 200 45% 10%;
+    --neuro-bg-alt: 200 45% 13%;
+    --neuro-shadow-light: 200 40% 16%;
+    --neuro-shadow-dark: 200 50% 5%;
+
+    --sidebar-background: 200 45% 10%;
+    --sidebar-foreground: 197 57% 94%;
+    --sidebar-primary: 199 36% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 35% 18%;
+    --sidebar-accent-foreground: 197 57% 94%;
+    --sidebar-border: 200 35% 20%;
+    --sidebar-ring: 199 36% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground font-sans antialiased;
+    background: hsl(var(--neuro-bg));
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--tw-gradient-start)), hsl(var(--tw-gradient-end)));
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #447F98 0%, #629BB5 50%, #35667B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .glass-card {
+    background: hsla(var(--tw-surface-elevated) / 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsla(var(--border) / 0.6);
+  }
+  .glow-primary {
+    box-shadow: 0 0 30px -5px hsla(var(--tw-glow-primary) / 0.35);
+  }
+  .shadow-card {
+    box-shadow: 0 4px 6px -1px hsla(var(--foreground) / 0.05), 0 2px 4px -2px hsla(var(--foreground) / 0.05);
+  }
+  .shadow-elevated {
+    box-shadow: 0 10px 25px -5px hsla(var(--foreground) / 0.1), 0 8px 10px -6px hsla(var(--foreground) / 0.05);
+  }
+
+  /* Neumorphic utilities */
+  .neuro-card {
+    background: hsl(var(--neuro-bg));
+    border-radius: 1.5rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    box-shadow:
+      -10px -10px 20px hsla(var(--neuro-shadow-light) / 0.9),
+      10px 10px 20px hsla(var(--neuro-shadow-dark) / 0.45);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neuro-card:hover {
+    box-shadow:
+      -14px -14px 28px hsla(var(--neuro-shadow-light) / 0.95),
+      14px 14px 28px hsla(var(--neuro-shadow-dark) / 0.45);
+    transform: translateY(-3px);
+  }
+
+  .neuro-card-flat {
+    background: hsl(var(--neuro-bg));
+    border-radius: 1.5rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.5);
+    box-shadow:
+      -6px -6px 14px hsla(var(--neuro-shadow-light) / 0.85),
+      6px 6px 14px hsla(var(--neuro-shadow-dark) / 0.4);
+  }
+
+  .neuro-inset {
+    background: hsl(var(--neuro-bg));
+    border-radius: 1.5rem;
+    border: none;
+    box-shadow:
+      inset -6px -6px 14px hsla(var(--neuro-shadow-light) / 0.75),
+      inset 6px 6px 14px hsla(var(--neuro-shadow-dark) / 0.35);
+  }
+
+  .neuro-btn {
+    background: hsl(var(--neuro-bg));
+    border-radius: 1rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    box-shadow:
+      -8px -8px 16px hsla(var(--neuro-shadow-light) / 0.85),
+      8px 8px 16px hsla(var(--neuro-shadow-dark) / 0.4);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neuro-btn:hover {
+    box-shadow:
+      -12px -12px 24px hsla(var(--neuro-shadow-light) / 0.9),
+      12px 12px 24px hsla(var(--neuro-shadow-dark) / 0.45);
+    transform: translateY(-2px);
+    color: hsl(var(--primary));
+  }
+
+  .neuro-btn:active {
+    box-shadow:
+      inset -6px -6px 12px hsla(var(--neuro-shadow-light) / 0.7),
+      inset 6px 6px 12px hsla(var(--neuro-shadow-dark) / 0.35);
+    transform: translateY(0);
+  }
+
+  .neuro-btn-nav {
+    background: hsl(var(--neuro-bg));
+    border-radius: 0.75rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.5);
+    box-shadow:
+      -5px -5px 10px hsla(var(--neuro-shadow-light) / 0.7),
+      5px 5px 10px hsla(var(--neuro-shadow-dark) / 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neuro-btn-nav:hover {
+    box-shadow:
+      inset -4px -4px 8px hsla(var(--neuro-shadow-light) / 0.6),
+      inset 4px 4px 8px hsla(var(--neuro-shadow-dark) / 0.3);
+    transform: translateY(1px);
+    color: hsl(var(--primary));
+  }
+
+  .neuro-btn-blue {
+    background: linear-gradient(135deg, #447F98 0%, #629BB5 100%);
+    color: #FFFFFF;
+    border-radius: 1rem;
+    border: none;
+    box-shadow:
+      -8px -8px 16px hsla(var(--neuro-shadow-light) / 0.85),
+      8px 8px 16px hsla(var(--neuro-shadow-dark) / 0.45),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.3);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .neuro-btn-blue::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+      45deg,
+      #447F98 0%,
+      #629BB5 25%,
+      #B9D8E1 50%,
+      #447F98 75%,
+      #629BB5 100%
+    );
+    background-size: 400% 400%;
+    border-radius: inherit;
+    z-index: -1;
+    animation: gradient-flow 6s ease-in-out infinite;
+    opacity: 0.75;
+  }
+
+  .neuro-btn-blue::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    transition: left 0.6s ease-in-out;
+    z-index: 1;
+  }
+
+  .neuro-btn-blue:hover {
+    box-shadow:
+      -12px -12px 24px hsla(var(--neuro-shadow-light) / 0.9),
+      12px 12px 24px hsla(var(--neuro-shadow-dark) / 0.35),
+      inset 0 2px 0 hsla(0, 0%, 100%, 0.4),
+      0 0 25px hsla(198, 38%, 43%, 0.45);
+    transform: translateY(-2px) scale(1.02);
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #629BB5 0%, #447F98 100%);
+  }
+
+  .neuro-btn-blue:hover::before {
+    animation-duration: 2s;
+    opacity: 1;
+    background-size: 200% 200%;
+  }
+
+  .neuro-btn-blue:hover::after {
+    left: 100%;
+  }
+
+  .neuro-btn-blue:active {
+    box-shadow:
+      inset -4px -4px 8px hsla(198, 38%, 43%, 0.4),
+      inset 4px 4px 8px hsla(199, 36%, 55%, 0.7),
+      0 0 15px hsla(198, 38%, 43%, 0.4);
+    transform: translateY(0px) scale(0.99);
+  }
+
+  @keyframes gradient-flow {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    25% {
+      background-position: 100% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+    75% {
+      background-position: 0% 100%;
+    }
+  }
+
+  .neuro-input {
+    background: hsl(var(--neuro-bg));
+    border: 1px solid hsla(var(--border) / 0.5);
+    border-radius: 1rem;
+    box-shadow:
+      inset -5px -5px 10px hsla(var(--neuro-shadow-light) / 0.7),
+      inset 5px 5px 10px hsla(var(--neuro-shadow-dark) / 0.35);
+    transition: all 0.2s ease;
+    outline: none;
+  }
+
+  .neuro-input:focus-within {
+    box-shadow:
+      inset -5px -5px 10px hsla(var(--neuro-shadow-light) / 0.8),
+      inset 5px 5px 10px hsla(198, 38%, 43%, 0.25);
+    border-color: #447F98;
+  }
+
+  .neuro-icon {
+    background: hsl(var(--neuro-bg));
+    border-radius: 50%;
+    box-shadow:
+      inset -3px -3px 6px hsla(var(--neuro-shadow-light) / 0.7),
+      inset 3px 3px 6px hsla(var(--neuro-shadow-dark) / 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neuro-icon-raised {
+    background: hsl(var(--neuro-bg));
+    border-radius: 50%;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    box-shadow:
+      -5px -5px 10px hsla(var(--neuro-shadow-light) / 0.85),
+      5px 5px 10px hsla(var(--neuro-shadow-dark) / 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neuro-progress-track {
+    background: hsl(var(--neuro-bg));
+    border-radius: 9999px;
+    box-shadow:
+      inset -3px -3px 6px hsla(var(--neuro-shadow-light) / 0.7),
+      inset 3px 3px 6px hsla(var(--neuro-shadow-dark) / 0.35);
+    overflow: hidden;
+  }
+
+  .neuro-progress-fill {
+    background: linear-gradient(90deg, #447F98, #629BB5);
+    border-radius: 9999px;
+    box-shadow: 0 2px 10px hsla(198, 38%, 43%, 0.4);
+  }
+
+  .neuro-badge {
+    background: hsl(var(--neuro-bg));
+    border-radius: 0.75rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    box-shadow:
+      -4px -4px 8px hsla(var(--neuro-shadow-light) / 0.85),
+      4px 4px 8px hsla(var(--neuro-shadow-dark) / 0.4);
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .neuro-badge-inset {
+    background: hsl(var(--neuro-bg));
+    border-radius: 0.75rem;
+    box-shadow:
+      inset -3px -3px 6px hsla(var(--neuro-shadow-light) / 0.7),
+      inset 3px 3px 6px hsla(var(--neuro-shadow-dark) / 0.35);
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .neuro-float {
+    box-shadow:
+      -16px -16px 32px hsla(var(--neuro-shadow-light) / 0.85),
+      16px 16px 32px hsla(var(--neuro-shadow-dark) / 0.45);
+  }
+
+  .neuro-glass {
+    background: hsla(var(--neuro-bg) / 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    border-radius: 1.5rem;
+    box-shadow:
+      -10px -10px 20px hsla(var(--neuro-shadow-light) / 0.75),
+      10px 10px 20px hsla(var(--neuro-shadow-dark) / 0.35),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neuro-glass:hover {
+    background: hsla(var(--neuro-bg) / 0.75);
+    box-shadow:
+      -14px -14px 28px hsla(var(--neuro-shadow-light) / 0.8),
+      14px 14px 28px hsla(var(--neuro-shadow-dark) / 0.4),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
+    transform: translateY(-3px);
+  }
+
+  .neuro-glass-gradient {
+    background: linear-gradient(135deg, hsla(198, 38%, 43%, 0.7), hsla(199, 36%, 55%, 0.7));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsla(189, 40%, 80%, 0.4);
+    border-radius: 1.5rem;
+    box-shadow:
+      0 8px 32px hsla(198, 38%, 43%, 0.25),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.3);
+  }
+
+  .neuro-divider {
+    height: 2px;
+    background: #DADEE1;
+    box-shadow:
+      inset -1px -1px 2px hsla(var(--neuro-shadow-light) / 0.8),
+      inset 1px 1px 2px hsla(var(--neuro-shadow-dark) / 0.35);
+    border-radius: 1px;
+  }
+
+  .neuro-heading {
+    background: hsl(var(--neuro-bg));
+    border-radius: 1.5rem;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    box-shadow:
+      -10px -10px 20px hsla(var(--neuro-shadow-light) / 0.85),
+      10px 10px 20px hsla(var(--neuro-shadow-dark) / 0.4),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .neuro-heading:hover {
+    box-shadow:
+      -14px -14px 28px hsla(var(--neuro-shadow-light) / 0.9),
+      14px 14px 28px hsla(var(--neuro-shadow-dark) / 0.45),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px -5px hsla(198, 38%, 43%, 0.25); }
+  50% { box-shadow: 0 0 35px -5px hsla(198, 38%, 43%, 0.45); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Enhanced Frosted Footer Styles */
+footer {
+  background: linear-gradient(180deg, 
+    hsla(var(--neuro-bg) / 0.2) 0%, 
+    hsla(var(--neuro-bg) / 0.9) 30%, 
+    hsl(var(--neuro-bg)) 100%);
+  border-top: 1px solid #DADEE1;
+}
+
+footer .neuro-card-inset {
+  background: linear-gradient(145deg, 
+    hsla(var(--neuro-bg) / 0.9), 
+    hsla(var(--neuro-bg) / 0.5));
+  box-shadow: 
+    inset 2px 2px 5px hsla(var(--neuro-shadow-dark) / 0.25),
+    inset -2px -2px 5px hsla(var(--neuro-shadow-light) / 0.9);
+  border: 1px solid #DADEE1;
+}
+
+footer .neuro-badge-inset {
+  background: linear-gradient(145deg, 
+    hsla(198, 38%, 43%, 0.12), 
+    hsla(199, 36%, 55%, 0.06));
+  box-shadow: 
+    inset 1px 1px 3px hsla(198, 38%, 43%, 0.2),
+    inset -1px -1px 3px hsla(0, 0%, 100%, 0.8);
+  border: 1px solid hsla(198, 38%, 43%, 0.25);
+  color: #447F98;
+}
+
+footer .neuro-btn-nav {
+  background: hsl(var(--neuro-bg));
+  box-shadow: 
+    3px 3px 6px hsla(var(--neuro-shadow-dark) / 0.3),
+    -3px -3px 6px hsla(var(--neuro-shadow-light) / 0.8);
+  border: 1px solid hsla(0, 0%, 100%, 0.6);
+  transition: all 0.3s ease;
+}
+
+footer .neuro-btn-nav:hover {
+  box-shadow: 
+    inset 2px 2px 4px hsla(var(--neuro-shadow-dark) / 0.25),
+    inset -2px -2px 4px hsla(var(--neuro-shadow-light) / 0.7);
+  transform: translateY(-1px);
+  color: #447F98;
+}
+
+footer .neuro-divider {
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #DADEE1 20%, 
+    #B9D8E1 50%, 
+    #DADEE1 80%, 
+    transparent 100%);
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+footer .absolute.opacity-10,
+footer .absolute.opacity-5 {
+  animation: float-gentle 8s ease-in-out infinite;
+}
+
+footer .absolute.opacity-5 {
+  animation-delay: -4s;
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+footer .animate-pulse {
+  animation: status-pulse 2s ease-in-out infinite;
+}
