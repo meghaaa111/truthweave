@@ -1,5 +1,8 @@
 import os
 import time
+import re
+import asyncio
+import json
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,12 +10,6 @@ from dotenv import load_dotenv
 
 # Load env variables first
 load_dotenv(override=True)
-
-def is_demo_mode() -> bool:
-    env_demo = os.getenv("DEMO_MODE")
-    if env_demo is not None:
-        return env_demo.strip().lower() in ("true", "1", "yes")
-    return not bool(os.getenv("GEMINI_API_KEY"))
 
 # Import models after dotenv is loaded
 from models.claim_extractor import extract_main_claim
@@ -33,7 +30,12 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "message": "TruthWeave API is running", "demo_mode": is_demo_mode()}
+    has_key = bool(os.getenv("GEMINI_API_KEY"))
+    return {
+        "status": "ok",
+        "message": "TruthWeave API is running",
+        "gemini_key_set": has_key
+    }
 
 class TextRequest(BaseModel):
     text: str
@@ -48,9 +50,9 @@ class TruthEngineResult(BaseModel):
     explanation: str
     confidence: str
     sources: list[SourceDetail]
-    
+
     class Config:
-        extra = "ignore"  # Ignore extra fields from Gemini
+        extra = "ignore"
 
 class AnalysisResponse(BaseModel):
     main_claim: str
@@ -64,113 +66,16 @@ def validate_text(text: str):
         raise HTTPException(status_code=400, detail="Input too short to analyze")
     return text.strip()
 
-def generate_demo_results(text: str, processing_delay_ms: int = 150) -> AnalysisResponse:
-    """Demo mode with smart claim verification"""
-    time.sleep(processing_delay_ms / 1000.0)
-    t_lower = text.lower()
-    
-    if "water" in t_lower and "cancer" in t_lower:
-        return AnalysisResponse(
-            main_claim="Drinking water causes cancer.",
-            truth_engine=TruthEngineResult(
-                verdict="FALSE",
-                corrected_info="Drinking clean, potable water does not cause cancer. Hydration is essential for human life and health.",
-                explanation="There is no scientific or medical evidence connecting normal drinking water consumption to cancer. Major health agencies such as the WHO and CDC promote proper hydration as essential for health.",
-                confidence="high",
-                sources=[
-                    SourceDetail(title="WHO: Safe Drinking-water", url="https://www.who.int/news-room/fact-sheets/detail/drinking-water"),
-                    SourceDetail(title="CDC: Water & Health", url="https://www.cdc.gov/healthywater/drinking/")
-                ]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-    elif "covid" in t_lower or "cure" in t_lower:
-        return AnalysisResponse(
-            main_claim="Drinking hot water cures COVID instantly.",
-            truth_engine=TruthEngineResult(
-                verdict="FALSE",
-                corrected_info="No scientific evidence supports hot water as a COVID treatment. WHO recommends vaccination and approved antivirals.",
-                explanation="This claim matches a known misinformation pattern circulated during the COVID-19 pandemic. Multiple health authorities have explicitly refuted it.",
-                confidence="high",
-                sources=[
-                    SourceDetail(title="WHO: Myth busters", url="https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public/myth-busters"),
-                    SourceDetail(title="CDC COVID-19 FAQs", url="https://www.cdc.gov/coronavirus/2019-ncov/faq.html")
-                ]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-    elif "moon landing" in t_lower and "fake" in t_lower:
-        return AnalysisResponse(
-            main_claim="The moon landing was faked.",
-            truth_engine=TruthEngineResult(
-                verdict="FALSE",
-                corrected_info="Multiple space agencies and independent lunar reflections verify the Apollo missions. Physical evidence includes moon rocks and retroreflectors.",
-                explanation="This conspiracy theory has been thoroughly debunked. Extensive photographic, video, and physical evidence proves humans walked on the moon.",
-                confidence="high",
-                sources=[SourceDetail(title="NASA Apollo Missions", url="https://www.nasa.gov/")]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-    elif any(k in t_lower for k in ["fact", "datum", "definition", "defined as", "true", "boils", "earth", "sun", "water", "aspect", "circumstance", "wikipedia"]):
-        return AnalysisResponse(
-            main_claim=text[:100],
-            truth_engine=TruthEngineResult(
-                verdict="TRUE",
-                corrected_info="This statement is a verified factual definition supported by standard encyclopedic references.",
-                explanation="This claim states a factual definition or established truth that aligns with standard dictionaries and educational reference sources.",
-                confidence="high",
-                sources=[
-                    SourceDetail(title="Encyclopaedia Britannica", url="https://www.britannica.com/"),
-                    SourceDetail(title="Merriam-Webster Dictionary", url="https://www.merriam-webster.com/")
-                ]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-    elif any(k in t_lower for k in ["cancer", "fake", "flat earth", "5g", "poison", "die", "harmful", "autism", "cause"]):
-        return AnalysisResponse(
-            main_claim=text[:100],
-            truth_engine=TruthEngineResult(
-                verdict="FALSE",
-                corrected_info="Leading scientific consensus and empirical research contradict this claim.",
-                explanation="This statement aligns with known health or scientific misinformation patterns. Verified health databases refute this assertion.",
-                confidence="high",
-                sources=[
-                    SourceDetail(title="WHO Fact Checks", url="https://www.who.int/"),
-                    SourceDetail(title="Reuters Fact Check", url="https://www.reuters.com/fact-check/")
-                ]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-    else:
-        return AnalysisResponse(
-            main_claim=f"{text[:80]}..." if len(text) > 80 else text,
-            truth_engine=TruthEngineResult(
-                verdict="TRUE",
-                corrected_info="This text provides factual context or descriptive information.",
-                explanation="The claim consists of factual or neutral informative statement supported by general reference materials.",
-                confidence="medium",
-                sources=[
-                    SourceDetail(title="Encyclopaedia Britannica", url="https://www.britannica.com/")
-                ]
-            ),
-            processing_time_ms=processing_delay_ms
-        )
-
 @app.post("/analyze/text", response_model=AnalysisResponse)
 async def analyze_text(request: TextRequest):
     start_time = time.time()
     text = validate_text(request.text)
-    
-    if is_demo_mode():
-        return generate_demo_results(text, processing_delay_ms=150)
-    
     text = clean_text(text)
-    
+
     # Extract main claim and run truth engine
     main_claim = extract_main_claim(text)
     truth_result = await hybrid_truth_engine(main_claim)
-    
-    # Filter out any extra fields that Gemini might add
+
     filtered_truth_result = TruthEngineResult(
         verdict=truth_result.get("verdict", "UNVERIFIABLE"),
         corrected_info=truth_result.get("corrected_info", ""),
@@ -178,9 +83,9 @@ async def analyze_text(request: TextRequest):
         confidence=truth_result.get("confidence", "low"),
         sources=truth_result.get("sources", [])
     )
-    
+
     calc_time = int((time.time() - start_time) * 1000)
-    
+
     return AnalysisResponse(
         main_claim=main_claim,
         truth_engine=filtered_truth_result,
@@ -190,20 +95,16 @@ async def analyze_text(request: TextRequest):
 
 @app.post("/analyze/image", response_model=AnalysisResponse)
 async def analyze_image(file: UploadFile = File(...)):
-    start_time = time.time()
-    
     content = await file.read()
-    
-    if is_demo_mode():
-        text = "Drinking hot water cures COVID instantly"
-        return generate_demo_results(text, processing_delay_ms=300)
-    
+
     text = await extract_text_from_image(content)
-    
+
     if not text or not text.strip():
-        raise HTTPException(status_code=400, detail="Could not detect or extract readable text from the uploaded image. Please ensure the image contains clear text.")
-        
-    # Reuse the text analysis logic
+        raise HTTPException(
+            status_code=400,
+            detail="Could not detect or extract readable text from the uploaded image. Please ensure the image contains clear text."
+        )
+
     request = TextRequest(text=text)
     return await analyze_text(request)
 
