@@ -159,7 +159,18 @@ def _build_model() -> genai.GenerativeModel:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY environment variable is not set on Render.")
     genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-2.5-flash", generation_config={"temperature": 0.1})
+    
+    # Try gemini-3.6-flash first, then fallback to gemini-3.7-flash
+    models_to_try = ["gemini-3.6-flash", "gemini-3.7-flash"]
+    last_err = None
+    for m in models_to_try:
+        try:
+            model = genai.GenerativeModel(m, generation_config={"temperature": 0.1})
+            return model
+        except Exception as e:
+            last_err = e
+            continue
+    return genai.GenerativeModel("gemini-3.6-flash", generation_config={"temperature": 0.1})
 
 
 def _parse_gemini_response(text: str) -> dict:
