@@ -1,48 +1,12 @@
-let currentBaseUrl = 'http://localhost:8000';
+// Hardcoded Backend API URL for Render deployment
+const RENDER_BACKEND_URL = 'https://truthweave-backend.onrender.com/analyze/text';
+const LOCAL_BACKEND_URL = 'http://localhost:8000/analyze/text';
 
 const claimInput = document.getElementById('claimInput');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const analyzeSelectedBtn = document.getElementById('analyzeSelectedBtn');
 const loading = document.getElementById('loading');
 const results = document.getElementById('results');
-const apiUrlInput = document.getElementById('apiUrlInput');
-
-// Load stored API URL on popup open
-if (chrome && chrome.storage && chrome.storage.local) {
-  chrome.storage.local.get(['truthweave_api_url'], (res) => {
-    if (res.truthweave_api_url) {
-      currentBaseUrl = res.truthweave_api_url;
-    }
-    if (apiUrlInput) {
-      apiUrlInput.value = currentBaseUrl;
-    }
-  });
-} else if (apiUrlInput) {
-  apiUrlInput.value = currentBaseUrl;
-}
-
-// Save API URL when input changes
-if (apiUrlInput) {
-  apiUrlInput.addEventListener('change', () => {
-    let val = apiUrlInput.value.trim();
-    if (!val) {
-      val = 'http://localhost:8000';
-      apiUrlInput.value = val;
-    }
-    currentBaseUrl = val;
-    if (chrome && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set({ truthweave_api_url: val });
-    }
-  });
-}
-
-function getApiEndpoint() {
-  const base = currentBaseUrl.replace(/\/$/, '');
-  if (base.endsWith('/analyze/text')) {
-    return base;
-  }
-  return `${base}/analyze/text`;
-}
 
 // Analyze button click handler
 analyzeBtn.addEventListener('click', async () => {
@@ -87,27 +51,49 @@ async function analyzeClaim(text) {
   analyzeBtn.disabled = true;
   analyzeSelectedBtn.disabled = true;
   
-  const endpoint = getApiEndpoint();
+  let response;
+  let success = false;
 
+  // 1. Try Render deployed backend first
   try {
-    const response = await fetch(endpoint, {
+    response = await fetch(RENDER_BACKEND_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
     });
-    
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+    if (response.ok) {
+      success = true;
     }
-    
-    const data = await response.json();
-    displayResults(data);
-    
+  } catch (err) {
+    console.warn('Render backend call failed, trying local fallback...', err);
+  }
+
+  // 2. Fallback to localhost if Render call failed
+  if (!success) {
+    try {
+      response = await fetch(LOCAL_BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      if (response.ok) {
+        success = true;
+      }
+    } catch (err) {
+      console.error('Local backend call also failed:', err);
+    }
+  }
+
+  try {
+    if (success && response) {
+      const data = await response.json();
+      displayResults(data);
+    } else {
+      showError(`Could not connect to TruthWeave backend (${RENDER_BACKEND_URL}). Please verify your Render service is active.`);
+    }
   } catch (error) {
-    console.error('Analysis error:', error);
-    showError(`Could not connect to TruthWeave backend at ${endpoint}. Make sure your Render backend is running and the API URL is correct.`);
+    console.error('Analysis parsing error:', error);
+    showError('Failed to parse response from server.');
   } finally {
     loading.classList.add('hidden');
     analyzeBtn.disabled = false;
