@@ -1,0 +1,6 @@
+backend/venv
+.env
+.env.local
+node_modules
+dist
+truth-seeker-ai
