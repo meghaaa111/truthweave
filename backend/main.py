@@ -22,7 +22,12 @@ app = FastAPI(title="TruthWeave API", description="AI-powered misinformation det
 # Enable CORS for the frontend - fixed credentials issue
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"],  # Specific origins instead of wildcard
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://truthweave-k687.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
