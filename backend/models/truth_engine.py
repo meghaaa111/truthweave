@@ -125,7 +125,7 @@ def filter_trusted(results: list[dict]):
 
 async def run_gemini(claim: str, snippets: list[dict]) -> dict:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash", generation_config={"temperature": 0.1})
+    model = genai.GenerativeModel("gemini-1.5-flash", generation_config={"temperature": 0.1})
     
     if not snippets:
         return {
@@ -222,7 +222,7 @@ TRUTH: [1-2 clear sentences stating the corrected and accurate information]"""
 async def run_gemini_no_sources(claim: str) -> dict:
     try:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-2.5-flash", generation_config={"temperature": 0.2})
+        model = genai.GenerativeModel("gemini-1.5-flash", generation_config={"temperature": 0.2})
         prompt = f"""Claim: {claim}
 
 No external web sources were reachable. Based on your knowledge:

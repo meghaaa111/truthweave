@@ -1,10 +1,48 @@
-const API_URL = 'http://localhost:8000/analyze/text';
+let currentBaseUrl = 'http://localhost:8000';
 
 const claimInput = document.getElementById('claimInput');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const analyzeSelectedBtn = document.getElementById('analyzeSelectedBtn');
 const loading = document.getElementById('loading');
 const results = document.getElementById('results');
+const apiUrlInput = document.getElementById('apiUrlInput');
+
+// Load stored API URL on popup open
+if (chrome && chrome.storage && chrome.storage.local) {
+  chrome.storage.local.get(['truthweave_api_url'], (res) => {
+    if (res.truthweave_api_url) {
+      currentBaseUrl = res.truthweave_api_url;
+    }
+    if (apiUrlInput) {
+      apiUrlInput.value = currentBaseUrl;
+    }
+  });
+} else if (apiUrlInput) {
+  apiUrlInput.value = currentBaseUrl;
+}
+
+// Save API URL when input changes
+if (apiUrlInput) {
+  apiUrlInput.addEventListener('change', () => {
+    let val = apiUrlInput.value.trim();
+    if (!val) {
+      val = 'http://localhost:8000';
+      apiUrlInput.value = val;
+    }
+    currentBaseUrl = val;
+    if (chrome && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ truthweave_api_url: val });
+    }
+  });
+}
+
+function getApiEndpoint() {
+  const base = currentBaseUrl.replace(/\/$/, '');
+  if (base.endsWith('/analyze/text')) {
+    return base;
+  }
+  return `${base}/analyze/text`;
+}
 
 // Analyze button click handler
 analyzeBtn.addEventListener('click', async () => {
@@ -28,7 +66,7 @@ analyzeSelectedBtn.addEventListener('click', async () => {
       func: () => window.getSelection().toString()
     });
     
-    const selectedText = result[0].result.trim();
+    const selectedText = result[0] && result[0].result ? result[0].result.trim() : '';
     
     if (!selectedText) {
       showError('No text selected on the page');
@@ -44,14 +82,15 @@ analyzeSelectedBtn.addEventListener('click', async () => {
 
 // Main analysis function
 async function analyzeClaim(text) {
-  // Show loading state
   loading.classList.remove('hidden');
   results.classList.add('hidden');
   analyzeBtn.disabled = true;
   analyzeSelectedBtn.disabled = true;
   
+  const endpoint = getApiEndpoint();
+
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +107,7 @@ async function analyzeClaim(text) {
     
   } catch (error) {
     console.error('Analysis error:', error);
-    showError('Could not connect to TruthWeave backend. Make sure the server is running on http://localhost:8000');
+    showError(`Could not connect to TruthWeave backend at ${endpoint}. Make sure your Render backend is running and the API URL is correct.`);
   } finally {
     loading.classList.add('hidden');
     analyzeBtn.disabled = false;
@@ -78,7 +117,6 @@ async function analyzeClaim(text) {
 
 // Display results in the popup
 function displayResults(data) {
-  // Backend returns: { main_claim, truth_engine: { verdict, corrected_info, explanation, confidence, sources }, processing_time_ms }
   const truthEngine = data.truth_engine || {};
   const verdict = truthEngine.verdict || 'Unknown';
   const explanation = truthEngine.explanation || 'No explanation provided';
@@ -105,7 +143,6 @@ function displayResults(data) {
   if (sources.length > 0) {
     html += `<div class="sources"><strong>Sources:</strong>`;
     sources.forEach(source => {
-      // Sources are objects with title and url
       const sourceUrl = source.url || source;
       const sourceTitle = source.title || sourceUrl;
       html += `<a href="${sourceUrl}" target="_blank">${sourceTitle}</a>`;
