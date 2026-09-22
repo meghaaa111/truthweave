@@ -8,6 +8,16 @@ const analyzeSelectedBtn = document.getElementById('analyzeSelectedBtn');
 const loading = document.getElementById('loading');
 const results = document.getElementById('results');
 
+// Auto-populate from right-click selection stored in background service worker
+if (chrome && chrome.storage && chrome.storage.local) {
+  chrome.storage.local.get(['pending_selection'], (res) => {
+    if (res && res.pending_selection) {
+      claimInput.value = res.pending_selection;
+      chrome.storage.local.remove(['pending_selection']);
+    }
+  });
+}
+
 // Analyze button click handler
 analyzeBtn.addEventListener('click', async () => {
   const text = claimInput.value.trim();
@@ -23,24 +33,36 @@ analyzeBtn.addEventListener('click', async () => {
 // Analyze selected text from webpage
 analyzeSelectedBtn.addEventListener('click', async () => {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    // Query active tab in the last focused window (behind extension popup)
+    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    
+    if (!tab || !tab.id) {
+      showError('No active webpage found.');
+      return;
+    }
+
+    if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('about:'))) {
+      showError('Browser settings/internal pages restrict extension script access. Highlight text on a regular webpage!');
+      return;
+    }
     
     const result = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => window.getSelection().toString()
     });
     
-    const selectedText = result[0] && result[0].result ? result[0].result.trim() : '';
+    const selectedText = result && result[0] && result[0].result ? result[0].result.trim() : '';
     
     if (!selectedText) {
-      showError('No text selected on the page');
+      showError('No text currently selected on the page. Highlight some text on the webpage first!');
       return;
     }
     
     claimInput.value = selectedText;
     await analyzeClaim(selectedText);
   } catch (error) {
-    showError('Could not read selected text. Please try copying and pasting instead.');
+    console.error('Analyze selected error:', error);
+    showError('Could not read selected text. Please highlight text on a webpage or paste it directly.');
   }
 });
 

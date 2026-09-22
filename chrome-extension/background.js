@@ -1,6 +1,5 @@
 // Background service worker for TruthWeave extension
 
-// Create context menu for right-click analysis
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'analyzeTruthWeave',
@@ -12,7 +11,8 @@ chrome.runtime.onInstalled.addListener(() => {
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'analyzeTruthWeave' && info.selectionText) {
-    // Open popup and pass selected text
-    chrome.action.openPopup();
+    chrome.storage.local.set({ pending_selection: info.selectionText }, () => {
+      chrome.action.openPopup();
+    });
   }
 });
