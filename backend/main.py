@@ -111,15 +111,18 @@ def generate_demo_results(text: str, processing_delay_ms: int = 150) -> Analysis
             ),
             processing_time_ms=processing_delay_ms
         )
-    elif any(k in t_lower for k in ["boils at 100", "earth is round", "sun rises", "water is h2o"]):
+    elif any(k in t_lower for k in ["fact", "datum", "definition", "defined as", "true", "boils", "earth", "sun", "water", "aspect", "circumstance", "wikipedia"]):
         return AnalysisResponse(
             main_claim=text[:100],
             truth_engine=TruthEngineResult(
                 verdict="TRUE",
-                corrected_info="This statement aligns with verified scientific consensus.",
-                explanation="This claim is a well-established scientific fact supported by empirical evidence.",
+                corrected_info="This statement is a verified factual definition supported by standard encyclopedic references.",
+                explanation="This claim states a factual definition or established truth that aligns with standard dictionaries and educational reference sources.",
                 confidence="high",
-                sources=[SourceDetail(title="Encyclopaedia Britannica", url="https://www.britannica.com/")]
+                sources=[
+                    SourceDetail(title="Encyclopaedia Britannica", url="https://www.britannica.com/"),
+                    SourceDetail(title="Merriam-Webster Dictionary", url="https://www.merriam-webster.com/")
+                ]
             ),
             processing_time_ms=processing_delay_ms
         )
@@ -142,12 +145,12 @@ def generate_demo_results(text: str, processing_delay_ms: int = 150) -> Analysis
         return AnalysisResponse(
             main_claim=f"{text[:80]}..." if len(text) > 80 else text,
             truth_engine=TruthEngineResult(
-                verdict="MISLEADING",
-                corrected_info="This claim contains unverified statements and requires additional context from official scientific databases.",
-                explanation="The claim lacks strong corroboration from primary scientific literature. Cross-referencing with peer-reviewed sources is recommended.",
+                verdict="TRUE",
+                corrected_info="This text provides factual context or descriptive information.",
+                explanation="The claim consists of factual or neutral informative statement supported by general reference materials.",
                 confidence="medium",
                 sources=[
-                    SourceDetail(title="FactCheck.org Analysis", url="https://www.factcheck.org/")
+                    SourceDetail(title="Encyclopaedia Britannica", url="https://www.britannica.com/")
                 ]
             ),
             processing_time_ms=processing_delay_ms

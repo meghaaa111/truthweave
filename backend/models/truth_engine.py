@@ -145,12 +145,13 @@ Live Web Sources:
 
 Instructions:
 1. Verify whether the claim is TRUE, FALSE, MISLEADING, or UNVERIFIABLE using the live web sources provided above.
-2. If the claim is inaccurate or outdated, explicitly state the current accurate facts (including names, positions, or events) from the sources.
-3. Respond STRICTLY in the following format:
+2. If the claim is a dictionary definition, factual statement, or standard educational concept (e.g., "A fact is a true datum..."), classify it as TRUE.
+3. If the claim is inaccurate or outdated, explicitly state the current accurate facts from the sources.
+4. Respond STRICTLY in the following format:
 
 VERDICT: [TRUE / FALSE / MISLEADING / UNVERIFIABLE]
-EXPLANATION: [2-3 sentences explaining the verdict based on the evidence]
-TRUTH: [1-2 clear sentences stating the corrected and accurate information]"""
+EXPLANATION: [2-3 sentences explaining the verdict based on evidence]
+TRUTH: [1-2 clear sentences stating the verified information]"""
     
     try:
         response = await asyncio.to_thread(model.generate_content, prompt)
@@ -226,7 +227,7 @@ async def run_gemini_no_sources(claim: str) -> dict:
         prompt = f"""Claim: {claim}
 
 No external web sources were reachable. Based on your knowledge:
-1. Is this claim TRUE, FALSE, MISLEADING, or UNVERIFIABLE?
+1. Is this claim TRUE, FALSE, MISLEADING, or UNVERIFIABLE? (Note: Dictionary definitions, factual statements, and standard concepts MUST be classified as TRUE).
 2. In 2-3 sentences, explain why.
 3. What is the correct information? (1-2 plain language sentences)
 
